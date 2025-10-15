@@ -1,0 +1,595 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(to bottom, #8E97FF 0%, #D8D8D8 100%);
+    min-height: 100vh;
+    color: #333;
+    /* 사이트 드래그 금지 */
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-drag: none;
+    overflow: hidden;
+    position: relative;
+}
+
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    position: relative; /* 팝업창 배치 기준점 */
+    display: flex;
+    gap: 30px;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.left-section {
+    flex: 1.2;
+    min-width: 350px;
+}
+
+.right-section {
+    flex: 1;
+    min-width: 500px;
+    overflow: hidden;
+}
+
+h1 {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    text-align: left;
+    color: white;
+    margin-bottom: 0;
+    font-size: 3.25rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    z-index: 10;
+}
+
+.camera-section {
+    background: transparent;
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+}
+
+.webcam-container {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 20px;
+    max-width: 100%;
+    overflow: hidden;
+    z-index: 50;
+}
+
+/* 통일된 크기: 480px x 640px (3:4 비율) */
+#video {
+    width: 480px;
+    height: 640px;
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 0px;
+    object-fit: cover;
+    border: 2px solid #ff00ff;
+}
+
+/* 얼굴 부위 범위 표시 - 비디오와 정확히 같은 크기 */
+.face-zones {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.face-zone {
+    position: absolute;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    border-radius: 0px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(2px);
+    transition: all 0.3s ease;
+}
+
+.face-zone:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 1);
+}
+
+.zone-label {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    padding: 4px 8px;
+    border-radius: 0px;
+    font-size: 16px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.left-eye-zone .zone-label,
+.right-eye-zone .zone-label {
+    background: #FFFF00;
+    color: #000;
+}
+
+.nose-zone .zone-label {
+    background: #00FFFF;
+    color: #000;
+}
+
+.mouth-zone .zone-label {
+    background: #00FF00;
+    color: #000;
+}
+
+/* 얼굴 부위 영역 - 픽셀 단위로 정확히 매핑 (눈 간격 더 넓히고 가로길이 더 줄이기) */
+/* 왼쪽 눈 영역 (하나로 묶음, 간격 더 넓히고 가로길이 더 줄이기) */
+.left-eye-zone {
+    top: 96px;   /* y: 96 */
+    left: 50px;  /* x: 50 (60에서 50으로 이동) */
+    width: 120px; /* width: 120 (150에서 120으로 더 줄임) */
+    height: 80px; /* height: 80 (2행의 전체 높이) */
+    border-color: #FFFF00;
+}
+
+/* 오른쪽 눈 영역 (하나로 묶음, 간격 더 넓히고 가로길이 더 줄이기) */
+.right-eye-zone {
+    top: 96px;   /* y: 96 */
+    left: 290px; /* x: 290 (270에서 290으로 이동) */
+    width: 120px; /* width: 120 (150에서 120으로 더 줄임) */
+    height: 80px; /* height: 80 (2행의 전체 높이) */
+    border-color: #FFFF00;
+}
+
+.nose-zone {
+    top: 256px;  /* y: 256 */
+    left: 168px; /* x: 168 (240-72=168, 중앙 정렬) */
+    width: 144px; /* width: 144 */
+    height: 128px; /* height: 128 */
+    border-color: #00FFFF;
+}
+
+.mouth-zone {
+    top: 384px;  /* y: 384 */
+    left: 120px; /* x: 120 (240-120=120, 중앙 정렬) */
+    width: 240px; /* width: 240 */
+    height: 128px; /* height: 128 */
+    border-color: #00FF00;
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    position: relative;
+    width: 100%;
+    height: 100vh;
+}
+
+.info-section .controls {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+}
+
+.btn-wrapper {
+    position: absolute;
+    display: inline-block;
+    pointer-events: auto;
+    z-index: 1500;
+    transition: none;
+}
+
+.btn-number {
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    font-family: 'Helvetica', Arial, sans-serif;
+    font-size: 18px;
+    font-weight: bold;
+    color: #0000FF;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    z-index: 10;
+    pointer-events: none;
+}
+
+.btn-wrapper:nth-child(1) .btn-number {
+    top: 50%;
+    bottom: auto;
+    left: -10px;
+    right: auto;
+    color: #00FF00;
+    transform: translateY(-50%);
+}
+
+.btn-wrapper:nth-child(2) .btn-number {
+    top: auto;
+    bottom: -10px;
+    left: auto;
+    right: -10px;
+    color: #FFFF00;
+}
+
+.btn-wrapper:nth-child(3) {
+    margin-left: 0;
+}
+
+.btn-wrapper:nth-child(3) .btn-number {
+    top: 50%;
+    bottom: auto;
+    left: -10px;
+    right: auto;
+    color: #00FFFF;
+    transform: translateY(-50%);
+}
+
+.capture-btn {
+    width: 250px;
+    height: auto;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: transparent;
+    border: none;
+    display: block;
+}
+
+.reconstruct-btn {
+    width: 150px;
+    height: auto;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: transparent;
+    border: none;
+    display: block;
+}
+
+.clear-btn {
+    width: 400px;
+    height: auto;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: transparent;
+    border: none;
+    display: block;
+}
+
+.capture-btn:hover,
+.clear-btn:hover {
+    transform: translateY(-2px) scale(1.15);
+}
+
+.reconstruct-btn:hover:not(.disabled) {
+    transform: translateY(-2px) scale(1.15);
+}
+
+.clear-btn:hover {
+    transform: translateY(-2px) scale(1.15);
+    animation: shake 0.5s ease-in-out infinite;
+}
+
+.reconstruct-btn.disabled,
+.clear-btn.disabled {
+    opacity: 0.5;
+    cursor: pointer;
+    filter: grayscale(50%);
+}
+
+.reconstruct-btn.disabled:hover,
+.clear-btn.disabled:hover {
+    transform: translateY(-2px) scale(1.15);
+}
+
+.info-section {
+    background: transparent;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: none;
+}
+
+.info-section p {
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    color: #333;
+    font-weight: bold;
+}
+
+.info-section ol {
+    padding-left: 20px;
+}
+
+.info-section li {
+    margin-bottom: 10px;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+/* Mac Finder 스타일 팝업창 - 절반 크기 (비율 유지) */
+.face-popup.finder-window {
+    position: fixed;
+    background: #f5f5f5;
+    border: 1px solid #d0d0d0;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    overflow: hidden;
+    opacity: 0.95;
+    transition: opacity 0.3s ease, box-shadow 0.3s ease;
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+    width: 240px;  /* 절반 크기 (480px → 240px) */
+    height: 320px; /* 절반 크기 (640px → 320px) */
+}
+
+.face-popup.finder-window:hover {
+    opacity: 1;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* Finder 헤더 */
+.finder-header {
+    background: linear-gradient(to bottom, #f0f0f0 0%, #e8e8e8 100%);
+    border-bottom: 1px solid #d0d0d0;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+/* 트래픽 라이트 버튼들 */
+.traffic-lights {
+    display: flex;
+    gap: 6px;
+    margin-right: 12px;
+}
+
+.traffic-light {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.traffic-light.close {
+    background: #ff5f57;
+    border: 1px solid #e0443e;
+}
+
+.traffic-light.close:hover {
+    background: #ff3b30;
+}
+
+.traffic-light.minimize {
+    background: #ffbd2e;
+    border: 1px solid #dea123;
+}
+
+.traffic-light.minimize:hover {
+    background: #ffd60a;
+}
+
+.traffic-light.maximize {
+    background: #28ca42;
+    border: 1px solid #1aad29;
+}
+
+.traffic-light.maximize:hover {
+    background: #30d158;
+}
+
+/* 제목 표시줄 */
+.title-bar {
+    flex: 1;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* 이미지 컨테이너 - 절반 크기 (비율 유지) */
+.image-container {
+    flex: 1;
+    overflow: hidden;
+    background: #fff;
+    cursor: pointer;
+    height: calc(320px - 40px); /* 헤더 높이 제외 (640px → 320px) */
+}
+
+.image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: fill; /* 여백 없이 꽉 채우기 */
+    display: block;
+    /* 이미지 드래그 완전 금지 */
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-drag: none;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .left-section,
+    .right-section {
+        min-width: auto;
+    }
+    
+    h1 {
+        font-size: 2rem;
+    }
+    
+    /* 모바일에서는 작은 크기로 통일 */
+    #video {
+        width: 300px;
+        height: 400px;
+        max-width: 100%;
+        max-height: 100%;
+    }
+    
+    .face-zones {
+        width: 100%;
+        height: 100%;
+    }
+    
+    /* 모바일 얼굴 부위 영역 - 비례적으로 축소 */
+    .left-eye-zone {
+        top: 60px;
+        left: 30px;
+        width: 105px;
+        height: 100px;
+    }
+    
+    .right-eye-zone {
+        top: 60px;
+        left: 165px;
+        width: 105px;
+        height: 100px;
+    }
+    
+    .nose-zone {
+        top: 160px;
+        left: 105px;
+        width: 90px;
+        height: 80px;
+    }
+    
+    .mouth-zone {
+        top: 240px;
+        left: 75px;
+        width: 150px;
+        height: 80px;
+    }
+    
+    .controls {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .capture-btn {
+        width: 250px;
+    }
+    
+    .reconstruct-btn {
+        width: 150px;
+    }
+    
+    .clear-btn {
+        width: 400px;
+    }
+    
+    #capturedImage {
+        width: 300px;
+        height: 400px;
+    }
+    
+    .face-popup.finder-window {
+        width: 150px;  /* 절반 크기 (300px → 150px) */
+        height: 200px; /* 절반 크기 (400px → 200px) */
+    }
+    
+    .image-container {
+        height: calc(200px - 40px); /* 헤더 높이 제외 (400px → 200px) */
+    }
+}
+
+/* 애니메이션 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 0.95;
+        transform: scale(1);
+    }
+}
+
+.face-popup.finder-window {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* 로딩 스피너 */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes shake {
+    0%, 100% { 
+        transform: translateY(-2px) scale(1.15) translateX(0px) rotate(0deg); 
+    }
+    10% { 
+        transform: translateY(-2px) scale(1.15) translateX(-2px) rotate(-1deg); 
+    }
+    20% { 
+        transform: translateY(-2px) scale(1.15) translateX(2px) rotate(1deg); 
+    }
+    30% { 
+        transform: translateY(-2px) scale(1.15) translateX(-1px) rotate(-0.5deg); 
+    }
+    40% { 
+        transform: translateY(-2px) scale(1.15) translateX(1px) rotate(0.5deg); 
+    }
+    50% { 
+        transform: translateY(-2px) scale(1.15) translateX(-1px) rotate(-0.3deg); 
+    }
+    60% { 
+        transform: translateY(-2px) scale(1.15) translateX(1px) rotate(0.3deg); 
+    }
+    70% { 
+        transform: translateY(-2px) scale(1.15) translateX(-0.5px) rotate(-0.2deg); 
+    }
+    80% { 
+        transform: translateY(-2px) scale(1.15) translateX(0.5px) rotate(0.2deg); 
+    }
+    90% { 
+        transform: translateY(-2px) scale(1.15) translateX(-0.3px) rotate(-0.1deg); 
+    }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

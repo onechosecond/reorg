@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>reorganize your face</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 배경음악 -->
+    <audio id="bgMusic" loop autoplay>
+        <source src="audio/background.mp3" type="audio/mpeg">
+        <source src="audio/background.ogg" type="audio/ogg">
+        Your browser does not support the audio element.
+    </audio>
+    
+    <div class="container">
+        <h1>reorganize your face</h1>
+        
+        <div class="left-section">
+            <div class="info-section">
+                <div class="controls">
+                    <div class="btn-wrapper">
+                        <img id="captureBtn" class="capture-btn" src="https://storage.ko-fi.com/cdn/useruploads/display/d42e4def-f81b-4ea6-9754-099139d34260_coolcamera.gif" alt="사진 찍기">
+                        <span class="btn-number">1</span>
+                    </div>
+                    <div class="btn-wrapper">
+                        <img id="reconstructBtn" class="reconstruct-btn disabled" src="https://media.tenor.com/BwEqClbo5zsAAAAj/floppa-flopppa.gif" alt="얼굴 재구성">
+                        <span class="btn-number">2</span>
+                    </div>
+                    <div class="btn-wrapper">
+                        <img id="clearBtn" class="clear-btn disabled" src="https://cdn.pixabay.com/animation/2025/06/25/14/26/14-26-07-192_512.gif" alt="모두 지우기">
+                        <span class="btn-number">3</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="right-section">
+            <div class="camera-section">
+                <div class="webcam-container">
+                    <video id="video" autoplay muted></video>
+                    <canvas id="canvas" style="display: none;"></canvas>
+                    
+                    <!-- 얼굴 부위 범위 표시 (눈 영역은 하나로 묶음) -->
+                    <div class="face-zones">
+                        <!-- 왼쪽 눈 영역 (하나로 묶음) -->
+                        <div class="face-zone left-eye-zone">
+                            <div class="zone-label">👁️</div>
+                        </div>
+                        
+                        <!-- 오른쪽 눈 영역 (하나로 묶음) -->
+                        <div class="face-zone right-eye-zone">
+                            <div class="zone-label">👁️</div>
+                        </div>
+                        
+                        <div class="face-zone nose-zone">
+                            <div class="zone-label">👃</div>
+                        </div>
+                        <div class="face-zone mouth-zone">
+                            <div class="zone-label">👄</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
